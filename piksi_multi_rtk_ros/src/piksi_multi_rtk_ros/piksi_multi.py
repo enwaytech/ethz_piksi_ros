@@ -56,17 +56,17 @@ class PiksiMulti:
     LIB_SBP_VERSION_MULTI = '2.4.1'  # SBP version used for Piksi Multi.
 
     # Geodetic Constants.
-    kSemimajorAxis = 6378137
+    kSemimajorAxis = 6378137.0
     kSemiminorAxis = 6356752.3142
     kFirstEccentricitySquared = 6.69437999014 * 0.001
     kSecondEccentricitySquared = 6.73949674228 * 0.001
     kFlattening = 1 / 298.257223563
 
     # IMU scaling constants.
-    kSensorSensitivity = 1 / np.iinfo(np.int16).max
+    kSensorSensitivity = 1.0 / np.iinfo(np.int16).max
     kGravity = 9.81
     kDegToRad = np.pi / 180.0
-    kToMicro = 1 / 10**6
+    kToMicro = 1.0 / 10**6
 
     kAccPrescale = kGravity * kSensorSensitivity
     kGyroPrescale = kDegToRad * kSensorSensitivity
@@ -175,8 +175,8 @@ class PiksiMulti:
         # Other parameters.
         self.publish_raw_imu_and_mag = rospy.get_param('~publish_raw_imu_and_mag', False)
         # Publish IMU
-        self.acc_scale = 8 * kAccPrescale
-        self.gyro_scale = 125 * kGyroPrescale
+        self.acc_scale = 8 * PiksiMulti.kAccPrescale
+        self.gyro_scale = 125 * PiksiMulti.kGyroPrescale
         self.has_imu_scale = False
 
 
@@ -196,8 +196,6 @@ class PiksiMulti:
             # Start new thread to periodically ping base station.
             threading.Thread(target=self.ping_base_station_over_wifi).start()
 
-        self.handler.start()
-
         # Handle firmware settings services
         self.last_section_setting_read = []
         self.last_setting_read = []
@@ -212,6 +210,8 @@ class PiksiMulti:
         self.use_gps_time = rospy.get_param('~use_gps_time', False)
         self.utc_times = {}
         self.tow = deque()
+
+        self.handler.start()
 
         # Spin.
         rospy.spin()
@@ -1260,12 +1260,12 @@ class PiksiMulti:
         # Scale accelerometer.
         acc_conf = msg.imu_conf & 0b1111 # Lower 4 bits.
         acc_range = 2**(acc_conf+1) # 2 to 16 g
-        self.acc_scale = acc_range * kAccPrescale
+        self.acc_scale = acc_range * PiksiMulti.kAccPrescale
 
         # Scale gyroscope.
         gyro_conf = msg.imu_conf >> 4 # Upper 4 bits.
         gyro_range = 2000 / (2**gyro_conf) # 125 to 2000 dps
-        self.gyro_scale = gyro_range * kGyroPrescale
+        self.gyro_scale = gyro_range * PiksiMulti.kGyroPrescale
 
         self.has_imu_scale = True
         rospy.loginfo_once("Received IMU scale.")
@@ -1284,9 +1284,9 @@ class PiksiMulti:
 
         mag_msg.header.frame_id = 'piksi_imu'
 
-        mag_msg.magnetic_field.x = msg.mag_x * kMagScaleXY
-        mag_msg.magnetic_field.y = msg.mag_y * kMagScaleXY
-        mag_msg.magnetic_field.z = msg.mag_z * kMagScaleZ
+        mag_msg.magnetic_field.x = msg.mag_x * PiksiMulti.kMagScaleXY
+        mag_msg.magnetic_field.y = msg.mag_y * PiksiMulti.kMagScaleXY
+        mag_msg.magnetic_field.z = msg.mag_z * PiksiMulti.kMagScaleZ
 
         self.publishers['mag'].publish(mag_msg)
 
