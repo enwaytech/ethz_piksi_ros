@@ -780,7 +780,7 @@ class PiksiMulti:
             if self.origin_enu_set:
                 self.publish_rtk_float(msg.lat, msg.lon, msg.height, stamp, self.var_rtk_float)
             else:
-                rospy.logwarn_throttle(5,
+                rospy.loginfo_throttle(5,
                     "[cb_sbp_pos_llh]: cannot publish float RTK because ENU origin is not set. " +
                     "Waiting for RTK fix.")
         elif fix_mode == PosLlhMulti.FIX_MODE_FIX_RTK:
